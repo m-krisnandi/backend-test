@@ -1,7 +1,6 @@
 const VehicleType = require("../../api/v1/vechicleType/model");
 const VehicleBrand = require("../../api/v1/vehicleBrand/model");
 const { BadRequestError, NotFoundError } = require("../../errors");
-const { Op } = require("sequelize");
 
 const createVehicleType = async (req) => {
   const { name, vehicleBrandId } = req.body;
