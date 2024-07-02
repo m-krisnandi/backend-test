@@ -10,7 +10,8 @@ const usersRouter = require("./app/api/v1/users/router");
 const authRouter = require("./app/api/v1/auth/router");
 const vehicleBrandRouter = require("./app/api/v1/vehicleBrand/router");
 const vehicleTypeRouter = require("./app/api/v1/vechicleType/router");
-const vechicleModelRouter = require("./app/api/v1/vehicleModel/router");
+const vehicleModelRouter = require("./app/api/v1/vehicleModel/router");
+const vehicleYearRouter = require("./app/api/v1/vehicleYear/router");
 
 // middlewares
 const notFoundMiddleware = require("./app/middlewares/not-found");
@@ -29,7 +30,8 @@ app.use(`${v1}`, usersRouter);
 app.use(`${v1}`, authRouter);
 app.use(`${v1}`, vehicleBrandRouter);
 app.use(`${v1}`, vehicleTypeRouter);
-app.use(`${v1}`, vechicleModelRouter);
+app.use(`${v1}`, vehicleModelRouter);
+app.use(`${v1}`, vehicleYearRouter);
 
 // catch 404 and forward to error handler
 app.use(notFoundMiddleware);

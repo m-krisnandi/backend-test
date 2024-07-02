@@ -1,6 +1,5 @@
 const VehicleBrand = require("../../api/v1/vehicleBrand/model");
 const { BadRequestError, NotFoundError } = require("../../errors");
-const { Op } = require("sequelize");
 
 const createVehicleBrand = async (req) => {
   const { name } = req.body;
