@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const PriceList = require("../../api/v1/priceList/model");
 const VehicleModel = require("../../api/v1/vehicleModel/model");
 const VehicleYear = require("../../api/v1/vehicleYear/model");
@@ -23,7 +24,30 @@ const createPriceList = async (req) => {
 };
 
 const getAllPriceLists = async (req) => {
-  const response = await PriceList.findAll({
+  const { code, price, year_id, model_id, limit, offset } = req.query;
+
+  const limitValue = parseInt(limit, 10) || 10;
+  const offsetValue = parseInt(offset, 10) || 0;
+
+  const whereConditions = {};
+  if (code) {
+    whereConditions.code = { [Op.iLike]: `%${code}%` };
+  }
+
+  if (price) {
+    whereConditions.price = { [Op.eq]: price };
+  }
+
+  if (year_id) {
+    whereConditions.vehicleYearId = year_id;
+  }
+
+  if (model_id) {
+    whereConditions.vehicleModelId = model_id;
+  }
+
+  const { count, rows } = await PriceList.findAndCountAll({
+    where: whereConditions,
     include: [
       {
         model: VehicleYear,
@@ -34,9 +58,11 @@ const getAllPriceLists = async (req) => {
         attributes: ["id", "name"],
       },
     ],
+    limit: limitValue,
+    offset: offsetValue,
   });
 
-  const formattedResponse = response.map((priceList) => ({
+  const formattedResponse = rows.map((priceList) => ({
     id: priceList.id,
     code: priceList.code,
     price: priceList.price,
@@ -52,7 +78,14 @@ const getAllPriceLists = async (req) => {
     updatedAt: priceList.updatedAt,
   }));
 
-  return formattedResponse;
+  return {
+    data: formattedResponse,
+    metadata: {
+      total: count,
+      limit: limitValue,
+      offset: offsetValue,
+    },
+  };
 };
 
 const getOnePriceList = async (req) => {

@@ -1,3 +1,4 @@
+const { Op } = require("sequelize");
 const VehicleBrand = require("../../api/v1/vehicleBrand/model");
 const { BadRequestError, NotFoundError } = require("../../errors");
 
@@ -18,9 +19,37 @@ const createVehicleBrand = async (req) => {
 };
 
 const getAllVehicleBrands = async (req) => {
-  const response = await VehicleBrand.findAll();
+  const { name, limit, offset } = req.query;
 
-  return response;
+  const limitValue = parseInt(limit, 10) || 10;
+  const offsetValue = parseInt(offset, 10) || 0;
+
+  const whereConditions = {};
+  if (name) {
+    whereConditions.name = { [Op.iLike]: `%${name}%` };
+  }
+
+  const { count, rows } = await VehicleBrand.findAndCountAll({
+    where: whereConditions,
+    limit: limitValue,
+    offset: offsetValue,
+  });
+
+  const formattedResponse = rows.map((vehicleBrand) => ({
+    id: vehicleBrand.id,
+    name: vehicleBrand.name,
+    createdAt: vehicleBrand.createdAt,
+    updatedAt: vehicleBrand.updatedAt,
+  }));
+
+  return {
+    data: formattedResponse,
+    metadata: {
+      total: count,
+      limit: limitValue,
+      offset: offsetValue,
+    },
+  };
 };
 
 const getOneVehicleBrand = async (req) => {

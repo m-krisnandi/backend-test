@@ -18,9 +18,37 @@ const createVehicleYear = async (req) => {
 };
 
 const getAllVehicleYears = async (req) => {
-  const response = await VehicleYear.findAll();
+  const { year, limit, offset } = req.query;
 
-  return response;
+  const limitValue = parseInt(limit, 10) || 10;
+  const offsetValue = parseInt(offset, 10) || 0;
+
+  const whereConditions = {};
+  if (year) {
+    whereConditions.year = parseInt(year, 10);
+  }
+
+  const { count, rows } = await VehicleYear.findAndCountAll({
+    where: whereConditions,
+    limit: limitValue,
+    offset: offsetValue,
+  });
+
+  const formattedResponse = rows.map((vehicleYear) => ({
+    id: vehicleYear.id,
+    year: vehicleYear.year,
+    createdAt: vehicleYear.createdAt,
+    updatedAt: vehicleYear.updatedAt,
+  }));
+
+  return {
+    data: formattedResponse,
+    metadata: {
+      total: count,
+      limit: limitValue,
+      offset: offsetValue,
+    },
+  };
 };
 
 const getOneVehicleYear = async (req) => {

@@ -29,11 +29,39 @@ const createUser = async (req) => {
 };
 
 const getAllUsers = async (req) => {
-  const response = await User.findAll({
-    attributes: ["id", "name", "email", "is_admin", "createdAt", "updatedAt"],
+  const { name, email, is_admin, limit, offset } = req.query;
+
+  const limitValue = parseInt(limit, 10) || 10;
+  const offsetValue = parseInt(offset, 10) || 0;
+
+  const whereConditions = {};
+  if (name) {
+    whereConditions.name = { [Op.iLike]: `%${name}%` };
+  }
+
+  if (email) {
+    whereConditions.email = { [Op.iLike]: `%${email}%` };
+  }
+
+  if (is_admin !== undefined) {
+    whereConditions.is_admin = is_admin === "true";
+  }
+
+  const { count, rows } = await User.findAndCountAll({
+    where: whereConditions,
+    attributes: { exclude: ["password"] },
+    limit: limitValue,
+    offset: offsetValue,
   });
 
-  return response;
+  return {
+    data: rows,
+    metadata: {
+      total: count,
+      limit: limitValue,
+      offset: offsetValue,
+    },
+  };
 };
 
 const getOneUser = async (req) => {

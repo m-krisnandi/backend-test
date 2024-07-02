@@ -1,6 +1,7 @@
 const VehicleModel = require("../../api/v1/vehicleModel/model");
 const VehicleType = require("../../api/v1/vechicleType/model");
 const { BadRequestError, NotFoundError } = require("../../errors");
+const { Op } = require("sequelize");
 
 const createVehicleModel = async (req) => {
   const { name, vehicleTypeId } = req.body;
@@ -20,16 +21,33 @@ const createVehicleModel = async (req) => {
 };
 
 const getAllVehicleModels = async (req) => {
-  const response = await VehicleModel.findAll({
+  const { name, type_id, limit, offset } = req.query;
+
+  const limitValue = parseInt(limit, 10) || 10;
+  const offsetValue = parseInt(offset, 10) || 0;
+
+  const whereConditions = {};
+  if (name) {
+    whereConditions.name = { [Op.iLike]: `%${name}%` };
+  }
+
+  if (type_id) {
+    whereConditions.vehicleTypeId = type_id;
+  }
+
+  const { count, rows } = await VehicleModel.findAndCountAll({
+    where: whereConditions,
     include: [
       {
         model: VehicleType,
         attributes: ["id", "name"],
       },
     ],
+    limit: limitValue,
+    offset: offsetValue,
   });
 
-  const formattedResponse = response.map((vehicleModel) => ({
+  const formattedResponse = rows.map((vehicleModel) => ({
     id: vehicleModel.id,
     name: vehicleModel.name,
     vehicle_type: {
@@ -40,7 +58,14 @@ const getAllVehicleModels = async (req) => {
     updatedAt: vehicleModel.updatedAt,
   }));
 
-  return formattedResponse;
+  return {
+    data: formattedResponse,
+    metadata: {
+      total: count,
+      limit: limitValue,
+      offset: offsetValue,
+    },
+  };
 };
 
 const getOneVehicleModel = async (req) => {
