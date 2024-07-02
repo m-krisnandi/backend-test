@@ -1,6 +1,9 @@
 const {
   createUser,
   getAllUsers,
+  getOneUser,
+  updateUser,
+  deleteUser,
 } = require("../../../services/sequelize/users");
 const { StatusCodes } = require("http-status-codes");
 
@@ -26,7 +29,46 @@ const findAll = async (req, res, next) => {
   }
 };
 
+const find = async (req, res, next) => {
+  try {
+    const response = await getOneUser(req);
+
+    res.status(StatusCodes.OK).json({
+      data: response,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const update = async (req, res, next) => {
+  try {
+    const response = await updateUser(req);
+
+    res.status(StatusCodes.OK).json({
+      data: response,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const destroy = async (req, res, next) => {
+  try {
+    const response = await deleteUser(req);
+
+    res.status(StatusCodes.OK).json({
+      data: response,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   create,
   findAll,
+  find,
+  update,
+  destroy,
 };
